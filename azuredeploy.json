@@ -1,0 +1,88 @@
+{
+    "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
+    "contentVersion": "1.0.0.0",
+    "parameters": {
+      "vNetAddressPrefix": {
+        "type": "string",
+        "defaultValue": "10.3.0.0/21",
+        "metadata": {
+          "description": "T2 virtual AddressPrefix"
+        }
+      },
+      "SubnetPrefix": {
+        "type": "string",
+        "defaultValue": "10.3.0.0/21",
+        "metadata": {
+          "description": "Azure Firewall subnet prefix. The minimum size of the Subnet subnet is /26"
+        }
+      },
+      "vNetNameSuffixes": {
+        "type": "array",
+        "defaultValue": ["one", "two", "three"]
+    }
+    },
+    "variables": {
+      "vNet": {
+        "AddressPrefix": "[parameters('vNetAddressPrefix')]",
+        "SubnetPrefix": "[parameters('SubnetPrefix')]",
+        "SubnetName": "AzureFirewallSubnet"
+      },
+      "vNetNamePrefix": "T2vNet_",
+      "azfwRouteTableName": "AzfwRouteTable",
+      "firewallName": "AzureFirewall",
+      "PublicIPName": "PublicIP",
+      "SubnetId": "[resourceId('Microsoft.Network/virtualNetworks/subnets', variables('vNetNamePrefix'), variables('vNet').SubnetName)]",
+      "PublicIpId": "[resourceId('Microsoft.Network/publicIPAddresses', variables('PublicIPName'))]"
+    },
+    "resources": [
+      {
+        "type": "Microsoft.Network/routeTables",
+        "name": "[variables('azfwRouteTableName')]",
+        "apiVersion": "2018-02-01",
+        "location": "[resourceGroup().location]",
+        "properties": {
+          "disableBgpRoutePropagation": false,
+          "routes": [
+            {
+              "name": "azfwInternetAccess",
+              "properties": {
+                "addressPrefix": "0.0.0.0/0",
+                "nextHopType": "Internet"
+              }
+            }
+          ]
+        }
+      },
+      {
+        "type": "Microsoft.Network/virtualNetworks",
+        "name": "[concat(variables('vNetNamePrefix'), copyIndex())]",
+        "apiVersion": "2018-04-01",
+        "copy":{
+          "count": "[length(parameters('vNetNameSuffixes'))]",
+          "name": "vnetloop"
+        },
+        "location": "[resourceGroup().location]",
+        "properties": {
+          "addressSpace": {
+            "addressPrefixes": [
+                "[variables('vNet').AddressPrefix]"
+            ]
+          },
+          "copy": [
+            {
+              "name": "subnets",
+              "count": 2,
+              "input": {
+                "name": "[concat('subnet-', copyIndex('subnets'))]",
+                "properties": {
+                  "addressPrefix": "[variables('vNet').SubnetPrefix[copyIndex('subnets')]]"
+                }
+              }
+            }
+          ]
+        }
+      }
+    ],
+    "outputs": {
+    }
+  }
