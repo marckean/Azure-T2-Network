@@ -2,52 +2,46 @@
     "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
     "contentVersion": "1.0.0.0",
     "parameters": {
-      "vNetAddressPrefix": {
-        "type": "string",
-        "defaultValue": "10.3.0.0/21",
-        "metadata": {
-          "description": "T2 virtual AddressPrefix"
+      "vNetObject": {
+        "type": "object",
+        "defaultValue": {
+            "vnet": { "name": "T2vNet01", "addressPrefix": [ "10.3.0.0/21" ] },
+            "subnets": [
+                { "name": "subnet01", "addressPrefix": "10.3.0.0/24" },
+                { "name": "subnet02", "addressPrefix": "10.3.1.0/24" },
+                { "name": "subnet03", "addressPrefix": "10.3.2.0/24" }
+            ]
+        },
+        "metadata": { 
+            "description": "vNet object.  See defaultValue for example."
         }
-      },
-      "SubnetPrefix": {
-        "type": "string",
-        "defaultValue": "10.3.0.0/21",
-        "metadata": {
-          "description": "Azure Firewall subnet prefix. The minimum size of the Subnet subnet is /26"
-        }
-      },
-      "vNetNameSuffixes": {
-        "type": "array",
-        "defaultValue": ["one", "two", "three"]
+    },
+    "T1VirtualApplianceVIP": {
+      "type": "string",
+      "defaultValue": "10.0.8.4",
+      "metadata": {
+        "description": "Internal VIP of the T1 virtual appliance for access from the T2 networks"
+      }
     }
     },
     "variables": {
-      "vNet": {
-        "AddressPrefix": "[parameters('vNetAddressPrefix')]",
-        "SubnetPrefix": "[parameters('SubnetPrefix')]",
-        "SubnetName": "AzureFirewallSubnet"
-      },
-      "vNetNamePrefix": "T2vNet_",
-      "azfwRouteTableName": "AzfwRouteTable",
-      "firewallName": "AzureFirewall",
-      "PublicIPName": "PublicIP",
-      "SubnetId": "[resourceId('Microsoft.Network/virtualNetworks/subnets', variables('vNetNamePrefix'), variables('vNet').SubnetName)]",
-      "PublicIpId": "[resourceId('Microsoft.Network/publicIPAddresses', variables('PublicIPName'))]"
+      "T2spokeRouteTableName": "spokeRouteTable"
     },
     "resources": [
       {
         "type": "Microsoft.Network/routeTables",
-        "name": "[variables('azfwRouteTableName')]",
+        "name": "[variables('T2spokeRouteTableName')]",
         "apiVersion": "2018-02-01",
         "location": "[resourceGroup().location]",
         "properties": {
-          "disableBgpRoutePropagation": false,
+          "disableBgpRoutePropagation": true,
           "routes": [
             {
-              "name": "azfwInternetAccess",
+              "name": "SpokeRouteTable",
               "properties": {
                 "addressPrefix": "0.0.0.0/0",
-                "nextHopType": "Internet"
+                "nextHopType": "VirtualAppliance",
+                "nextHopIpAddress": "[parameters('T1VirtualApplianceVIP')]"
               }
             }
           ]
@@ -55,27 +49,23 @@
       },
       {
         "type": "Microsoft.Network/virtualNetworks",
-        "name": "[concat(variables('vNetNamePrefix'), copyIndex())]",
+        "name": "[parameters('vNetObject').vNet.Name]",
         "apiVersion": "2018-04-01",
-        "copy":{
-          "count": "[length(parameters('vNetNameSuffixes'))]",
-          "name": "vnetloop"
-        },
         "location": "[resourceGroup().location]",
         "properties": {
           "addressSpace": {
             "addressPrefixes": [
-                "[variables('vNet').AddressPrefix]"
+                "[parameters('vNetObject').vNet.addressPrefix]"
             ]
           },
           "copy": [
             {
               "name": "subnets",
-              "count": 2,
+              "count": "[length(parameters('vNetObject').subnets)]",
               "input": {
-                "name": "[concat('subnet-', copyIndex('subnets'))]",
+                "name": "[copyIndex('subnets').name]",
                 "properties": {
-                  "addressPrefix": "[variables('vNet').SubnetPrefix[copyIndex('subnets')]]"
+                  "addressPrefix": "[copyIndex('subnets').addressPrefix]"
                 }
               }
             }
