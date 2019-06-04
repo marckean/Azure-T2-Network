@@ -6,7 +6,7 @@
       "type": "string",
       "defaultValue": "T2vNet",
       "metadata": {
-        "description": "T1 virtual network name"
+        "description": "T2 virtual network name"
       }
     },
     "vNetAddressPrefix": {
