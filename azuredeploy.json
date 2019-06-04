@@ -76,7 +76,10 @@
               "input": {
                 "name": "[parameters('subnetArray')[copyIndex('subnets')].subnet.name]",
                 "properties": {
-                  "addressPrefix": "[parameters('subnetArray')[copyIndex('subnets')].subnet.addressPrefix]"
+                  "addressPrefix": "[parameters('subnetArray')[copyIndex('subnets')].subnet.addressPrefix]",
+                  "routeTable": {
+                    "id": "[resourceId('Microsoft.Network/routeTables', variables('T2spokeRouteTableName'))]"
+                  }
                 }
               }
             }
