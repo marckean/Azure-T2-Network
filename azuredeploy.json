@@ -85,9 +85,5 @@
       }
     ],
     "outputs": {
-      "foo": {
-          "type": "array",
-          "value": "[parameters('subnetArray')]"
-      }
-  }
+    }
   }
