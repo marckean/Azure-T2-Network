@@ -63,6 +63,9 @@
         "name": "[parameters('vNetName')]",
         "apiVersion": "2018-04-01",
         "location": "[resourceGroup().location]",
+        "dependsOn": [
+          "[concat('Microsoft.Network/routeTables', variables('T2spokeRouteTableName'))]"
+        ],
         "properties": {
           "addressSpace": {
             "addressPrefixes": [
