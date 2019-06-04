@@ -2,19 +2,30 @@
     "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
     "contentVersion": "1.0.0.0",
     "parameters": {
-      "vNetObject": {
-        "type": "object",
-        "defaultValue": {
-            "vnet": { "name": "T2vNet01", "addressPrefix": [ "10.3.0.0/21" ] },
-            "subnets": [
-                { "name": "subnet01", "addressPrefix": "10.3.0.0/24" },
-                { "name": "subnet02", "addressPrefix": "10.3.1.0/24" },
-                { "name": "subnet03", "addressPrefix": "10.3.2.0/24" }
-            ]
-        },
-        "metadata": { 
-            "description": "vNet object.  See defaultValue for example."
-        }
+    "vNetName": {
+      "type": "string",
+      "defaultValue": "T2vNet",
+      "metadata": {
+        "description": "T1 virtual network name"
+      }
+    },
+    "vNetAddressPrefix": {
+      "type": "string",
+      "defaultValue": "10.3.0.0/21",
+      "metadata": {
+        "description": "T2 virtual AddressPrefix"
+      }
+    },
+    "subnetArray": {
+      "type": "array",
+      "defaultValue": [
+          {"subnet": {"name": "subnet01", "addressPrefix": "10.3.0.0/24"}},
+          {"subnet": {"name": "subnet02", "addressPrefix": "10.3.1.0/24"}},
+          {"subnet": {"name": "subnet03", "addressPrefix": "10.3.2.0/24"}}
+      ],
+      "metadata": {
+          "description": "Array of spoke objects. See defaultValue for example."
+      }
     },
     "T1VirtualApplianceVIP": {
       "type": "string",
@@ -49,23 +60,23 @@
       },
       {
         "type": "Microsoft.Network/virtualNetworks",
-        "name": "[parameters('vNetObject').vNet.Name]",
+        "name": "[parameters('vNetName')]",
         "apiVersion": "2018-04-01",
         "location": "[resourceGroup().location]",
         "properties": {
           "addressSpace": {
             "addressPrefixes": [
-                "[parameters('vNetObject').vNet.addressPrefix]"
+              "[parameters('vNetAddressPrefix')]"
             ]
           },
           "copy": [
             {
               "name": "subnets",
-              "count": "[length(parameters('vNetObject').subnets)]",
+              "count": "[length(parameters('subnetArray'))]",
               "input": {
-                "name": "[copyIndex('subnets').name]",
+                "name": "[parameters('subnetArray')[copyIndex('subnets')].subnet.name]",
                 "properties": {
-                  "addressPrefix": "[copyIndex('subnets').addressPrefix]"
+                  "addressPrefix": "[parameters('subnetArray')[copyIndex('subnets')].subnet.addressPrefix]"
                 }
               }
             }
@@ -74,5 +85,9 @@
       }
     ],
     "outputs": {
-    }
+      "foo": {
+          "type": "array",
+          "value": "[parameters('subnetArray')]"
+      }
+  }
   }
