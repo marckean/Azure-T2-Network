@@ -2,31 +2,30 @@
     "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
     "contentVersion": "1.0.0.0",
     "parameters": {
-    "vNetName": {
-      "type": "string",
-      "defaultValue": "T2vNet",
-      "metadata": {
-        "description": "T2 virtual network name"
-      }
-    },
-    "vNetAddressPrefix": {
-      "type": "string",
-      "defaultValue": "10.3.0.0/21",
-      "metadata": {
-        "description": "T2 virtual AddressPrefix"
-      }
-    },
-    "subnetArray": {
-      "type": "array",
-      "defaultValue": [
-          {"subnet": {"name": "subnet01", "addressPrefix": "10.3.0.0/24"}},
-          {"subnet": {"name": "subnet02", "addressPrefix": "10.3.1.0/24"}},
-          {"subnet": {"name": "subnet03", "addressPrefix": "10.3.2.0/24"}}
-      ],
-      "metadata": {
-          "description": "Array of spoke objects. See defaultValue for example."
-      }
-    },
+      "vNetArray": {
+        "type": "array",
+        "defaultValue": [
+            {
+                "vnet": { "name": "T2vNet01", "addressPrefix": [ "10.3.0.0/21"  ] },
+                "subnets": [
+                  {"subnet": {"name": "subnet01", "addressPrefix": "10.3.0.0/24"}},
+                  {"subnet": {"name": "subnet02", "addressPrefix": "10.3.1.0/24"}},
+                  {"subnet": {"name": "subnet03", "addressPrefix": "10.3.2.0/24"}}
+                ]
+            },
+            {
+                "vnet": { "name": "T2vNet02", "addressPrefix": [ "10.4.0.0/21" ] },
+                "subnets": [
+                  {"subnet": {"name": "subnet01", "addressPrefix": "10.4.0.0/24"}},
+                  {"subnet": {"name": "subnet02", "addressPrefix": "10.4.1.0/24"}},
+                  {"subnet": {"name": "subnet03", "addressPrefix": "10.4.2.0/24"}}
+                ]
+            }
+        ],
+        "metadata": {
+            "description": "Array of spoke objects. See defaultValue for example."
+        }
+      },
     "T1VirtualApplianceVIP": {
       "type": "string",
       "defaultValue": "10.0.8.4",
@@ -60,26 +59,32 @@
       },
       {
         "type": "Microsoft.Network/virtualNetworks",
-        "name": "[parameters('vNetName')]",
+        "name": "[parameters('vNetArray')[copyIndex()].vnet.name]",
         "apiVersion": "2018-04-01",
         "location": "[resourceGroup().location]",
         "dependsOn": [
-          "[concat('Microsoft.Network/routeTables', variables('T2spokeRouteTableName'))]"
+          "[concat('Microsoft.Network/routeTables/', variables('T2spokeRouteTableName'))]"
         ],
+        "copy": {
+          "name": "T2vNetCopy",
+          "count": "[length(parameters('vNetArray'))]",
+          "mode": "Serial",
+          "batchSize": 2
+        },
         "properties": {
           "addressSpace": {
             "addressPrefixes": [
-              "[parameters('vNetAddressPrefix')]"
+              "[parameters('vNetArray')[copyIndex()].vnet.addressPrefix]"
             ]
           },
           "copy": [
             {
               "name": "subnets",
-              "count": "[length(parameters('subnetArray'))]",
+              "count": "[length(parameters('vNetArray')[copyIndex()].subnets)]",
               "input": {
-                "name": "[parameters('subnetArray')[copyIndex('subnets')].subnet.name]",
+                "name": "[parameters('vNetArray')[copyIndex()].subnets[copyIndex('subnets')].subnet.name]",
                 "properties": {
-                  "addressPrefix": "[parameters('subnetArray')[copyIndex('subnets')].subnet.addressPrefix]",
+                  "addressPrefix": "[parameters('vNetArray')[copyIndex()].subnets[copyIndex('subnets')].subnet.addressPrefix]",
                   "routeTable": {
                     "id": "[resourceId('Microsoft.Network/routeTables', variables('T2spokeRouteTableName'))]"
                   }
