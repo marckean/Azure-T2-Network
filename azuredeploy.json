@@ -68,14 +68,11 @@
         "copy": {
           "name": "T2vNetCopy",
           "count": "[length(parameters('vNetArray'))]",
-          "mode": "Serial",
-          "batchSize": 2
+          "mode": "Parallel"
         },
         "properties": {
           "addressSpace": {
-            "addressPrefixes": [
-              "[parameters('vNetArray')[copyIndex()].vnet.addressPrefix]"
-            ]
+            "addressPrefixes": "[parameters('vNetArray')[copyIndex()].vnet.addressPrefix]"
           },
           "copy": [
             {
