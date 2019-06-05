@@ -1,9 +1,12 @@
-# Azure-T2-Network
-This is the Tier 2 part of the 3 tier network.
-
-The T1 vNet can't talk directly with the T3 vNet and vice versa. 
+## The Azure 3 Tier Network
+For the serious security concious. In brief, the T1 vNet can't talk directly with the T3 vNet and vice versa. 
 
 ![AzureNetworkT1,T2,T3.jpg](AzureNetworkT1,T2,T3.jpg)
+
+# Azure-T2-Network
+This repo is for the Tier 2 part of the 3 tier network.
+
+![AzureNetworkT2.jpg](AzureNetworkT2.jpg)
 
 To deploy the middle T2 layer of this Azure network:
 
