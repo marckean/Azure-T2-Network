@@ -1,5 +1,5 @@
 ## The Azure 3 Tier Network
-For the serious security concious. In brief, the T1 vNet can't talk directly with the T3 vNet and vice versa. 
+For the serious security concious, this is one way to do networks from within Azure. In brief, the T1 vNet can't talk directly with the T3 vNet and vice versa. 
 
 ![AzureNetworkT1,T2,T3.jpg](AzureNetworkT1,T2,T3.jpg)
 
