@@ -45,7 +45,7 @@
           "disableBgpRoutePropagation": true,
           "routes": [
             {
-              "name": "SpokeRouteTable",
+              "name": "T2InternetEgress",
               "properties": {
                 "addressPrefix": "0.0.0.0/0",
                 "nextHopType": "VirtualAppliance",
