@@ -9,16 +9,14 @@
                 "vnet": { "name": "T2vNet01", "addressPrefix": [ "10.3.0.0/21"  ] },
                 "subnets": [
                   {"subnet": {"name": "subnet01", "addressPrefix": "10.3.0.0/24"}},
-                  {"subnet": {"name": "subnet02", "addressPrefix": "10.3.1.0/24"}},
-                  {"subnet": {"name": "subnet03", "addressPrefix": "10.3.2.0/24"}}
+                  {"subnet": {"name": "subnet02", "addressPrefix": "10.3.1.0/24"}}
                 ]
             },
             {
                 "vnet": { "name": "T2vNet02", "addressPrefix": [ "10.4.0.0/21" ] },
                 "subnets": [
                   {"subnet": {"name": "subnet01", "addressPrefix": "10.4.0.0/24"}},
-                  {"subnet": {"name": "subnet02", "addressPrefix": "10.4.1.0/24"}},
-                  {"subnet": {"name": "subnet03", "addressPrefix": "10.4.2.0/24"}}
+                  {"subnet": {"name": "subnet02", "addressPrefix": "10.4.1.0/24"}}
                 ]
             }
         ],
